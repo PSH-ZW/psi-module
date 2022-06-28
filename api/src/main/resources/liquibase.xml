@@ -32,4 +32,69 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="Add program for STI" author="vishnu">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(*) from program where name = 'STI Program';
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            insert into program(concept_id, outcomes_concept_id, date_created, retired, name, uuid, creator) values((select concept_id from concept_name where name = 'STI Program' and concept_name_type = 'FULLY_SPECIFIED' and voided = 0), (select concept_id from concept_name where name = 'STI Program Outcomes' and concept_name_type = 'FULLY_SPECIFIED' and voided = 0), now(), 0, 'STI Program', uuid(), 4);
+        </sql>
+    </changeSet>
+
+    <changeSet id="Add query for getting patients enrolled in STI Program" author="vishnu">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(*) from global_property where property = 'emrapi.sqlSearch.activeSTIPatients';
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            insert into global_property(property, property_value, uuid) values('emrapi.sqlSearch.activeSTIPatients',
+            'SELECT DISTINCT concat(pn.given_name, \' \', Ifnull(pn.family_name, \'\')) AS name,
+            pi.identifier                                          AS
+            identifier,
+            concat(\'\', p.uuid)                                     AS uuid,
+            concat(\'\', v.uuid)                                     AS
+            activeVisitUuid,
+            IF(va.value_reference = \'admitted\', \'true\', \'false\')   AS
+            hasBeenAdmitted
+            FROM   visit v
+            join person_name pn
+            ON v.patient_id = pn.person_id
+            AND pn.voided = 0
+            join patient_identifier pi
+            ON v.patient_id = pi.patient_id
+            join patient_identifier_type pit
+            ON pi.identifier_type = pit.patient_identifier_type_id
+            join global_property gp
+            ON gp.property = \'bahmni.primaryidentifiertype\'
+            AND gp.property_value = pit.uuid
+            join person p
+            ON p.person_id = v.patient_id
+            join patient_program pg
+            ON pg.patient_id = pi.patient_id
+            join program pgg
+            ON pgg.program_id = pg.program_id
+            join location l
+            ON l.uuid = ${visit_location_uuid}
+            AND v.location_id = l.location_id
+            left outer join visit_attribute va
+            ON va.visit_id = v.visit_id
+            AND va.attribute_type_id =
+            (SELECT
+            visit_attribute_type_id
+            FROM   visit_attribute_type WHERE  name =
+            \'admission status\'
+            )
+            AND va.voided = 0
+            WHERE  v.date_stopped IS NULL
+            AND v.voided = 0
+            AND pgg.name = \'STI Program\'
+            and pg.outcome_concept_id is NULL
+            and pg.voided =0;',
+            uuid());
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

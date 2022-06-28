@@ -72,6 +72,7 @@ public class AutoEnrolIntoProgram {
         visitTypeToProgramMap.put("Confirmatory HIV testing and Counseling","HTS Program");
         visitTypeToProgramMap.put("Viac Initial","VIAC Program");
         visitTypeToProgramMap.put("Viac Continuation","VIAC Program");
+        visitTypeToProgramMap.put("STI","STI Program");
         return visitTypeToProgramMap;
     }
 

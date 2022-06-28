@@ -3,10 +3,6 @@ package org.bahmni.module.bahmnipsi.identifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bahmni.module.bahmnipsi.enrollment.AutoEnrolIntoProgram;
-import org.openmrs.Patient;
-import org.openmrs.PatientProgram;
-import org.openmrs.Program;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.bahmniemrapi.encountertransaction.command.EncounterDataPreSaveCommand;
 import org.openmrs.module.bahmniemrapi.encountertransaction.contract.BahmniEncounterTransaction;
 import org.openmrs.module.bahmniemrapi.encountertransaction.contract.BahmniObservation;
@@ -14,7 +10,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 
 @Component
 public class PatientIdentifierSaveCommandImpl implements EncounterDataPreSaveCommand {
@@ -29,10 +27,11 @@ public class PatientIdentifierSaveCommandImpl implements EncounterDataPreSaveCom
     private Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
-    public PatientIdentifierSaveCommandImpl(PatientOiPrepIdentifier patientOiPrepIdentifier,AutoEnrolIntoProgram autoEnrolIntoProgram) {
+    public PatientIdentifierSaveCommandImpl(PatientOiPrepIdentifier patientOiPrepIdentifier, AutoEnrolIntoProgram autoEnrolIntoProgram) {
         this.patientOiPrepIdentifier = patientOiPrepIdentifier;
         this.autoEnrolIntoProgram = autoEnrolIntoProgram;
     }
+
     @Override
     public BahmniEncounterTransaction update(BahmniEncounterTransaction bahmniEncounterTransaction) {
         String patientUuid = bahmniEncounterTransaction.getPatientUuid();
@@ -40,7 +39,7 @@ public class PatientIdentifierSaveCommandImpl implements EncounterDataPreSaveCom
 
         String requiredObs = checkForArtPrepServiceObs(groupMembers);
 
-        autoEnrolIntoProgram.autoEnrollIntoProgram(bahmniEncounterTransaction,groupMembers);
+        autoEnrolIntoProgram.autoEnrollIntoProgram(bahmniEncounterTransaction, groupMembers);
 
         if (!requiredObs.isEmpty()) {
             if (requiredObs.equalsIgnoreCase(initialArt)) {
@@ -101,7 +100,7 @@ public class PatientIdentifierSaveCommandImpl implements EncounterDataPreSaveCom
         this.patientOiPrepIdentifier = patientOiPrepIdentifier;
     }
 
-    public void setAutoEnrolIntoProgram(AutoEnrolIntoProgram autoEnrolIntoProgram){
+    public void setAutoEnrolIntoProgram(AutoEnrolIntoProgram autoEnrolIntoProgram) {
         this.autoEnrolIntoProgram = autoEnrolIntoProgram;
     }
 
